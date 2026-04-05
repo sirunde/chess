@@ -1,5 +1,6 @@
 #pragma once
 #include <verts.h>
+
 #include <cmath>
 #include <vector>
 enum class PieceType { PAWN,
@@ -7,7 +8,7 @@ enum class PieceType { PAWN,
                        QUEEN,
                        KING,
                        BISHOP,
-                       KNIGHT};
+                       KNIGHT };
 
 struct Position {
   int col;
@@ -23,13 +24,54 @@ class Piece {
  public:
   Piece(PieceType type = PieceType::PAWN, int color = 0, int x = 0, int y = 0);
   ~Piece();
-
   void move(Position position);
   int getColor() const;
   Position getPosition() const;
   PieceType getType() const;
+  virtual std::vector<std::vector<Position>> possibleMoves() const = 0;
+};
 
-  std::vector<std::vector<Position>> possibleMoves() const;
+class Pawn : public Piece {
+ public:
+  Pawn(int color, int col, int row)
+      : Piece(PieceType::PAWN, color, col, row) {}
+
+  std::vector<std::vector<Position>> possibleMoves() const override;
+};
+class Rook : public Piece {
+ public:
+  Rook(int color, int col, int row)
+      : Piece(PieceType::ROOK, color, col, row) {}
+
+  std::vector<std::vector<Position>> possibleMoves() const override;
+};
+class Bishop : public Piece {
+ public:
+  Bishop(int color, int col, int row)
+      : Piece(PieceType::BISHOP, color, col, row) {}
+
+  std::vector<std::vector<Position>> possibleMoves() const override;
+};
+class Queen : public Piece {
+ public:
+  Queen(int color, int col, int row)
+      : Piece(PieceType::QUEEN, color, col, row) {}
+
+  std::vector<std::vector<Position>> possibleMoves() const override;
+};
+class Knight : public Piece {
+ public:
+  Knight(int color, int col, int row)
+      : Piece(PieceType::KNIGHT, color, col, row) {}
+
+  std::vector<std::vector<Position>> possibleMoves() const override;
+};
+class King : public Piece {
+ public:
+  King(int color, int col, int row)
+      : Piece(PieceType::KING, color, col, row) {}
+
+  std::vector<std::vector<Position>> possibleMoves() const override;
 };
 
 class Board {
@@ -45,8 +87,8 @@ class Board {
   Piece* (*getBoard())[8];
   Piece* (&getBlack())[16];
   Piece* (&getWhite())[16];
-  void setWhite(int i);
-  void setBlack(int i);
+  void setWhite(int i,Piece* piece);
+  void setBlack(int i,Piece* piece);
   std::vector<Position> possible(Piece* piece);
   bool setBoard();
   void capture(Piece* piece, Position new_position);

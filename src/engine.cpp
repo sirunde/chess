@@ -434,8 +434,7 @@ int Engine::start() {
         } else {
           draw_pieces(board, shader, quadVertices, pieceTexture, useTexLoc, colorLoc, pieceColor, VAO);
         }
-      }
-      else {
+      } else {
         draw_pieces(board, shader, quadVertices, pieceTexture, useTexLoc, colorLoc, pieceColor, VAO);
       }
     }
@@ -445,7 +444,7 @@ int Engine::start() {
       Piece* piece = grid[holdCol][holdRow];
       if (piece) {
         std::vector<Position> temp = board.possible(piece);
-        if (temp.empty()){
+        if (temp.empty()) {
           holding = false;
           isClicked = false;
           continue;
@@ -457,19 +456,14 @@ int Engine::start() {
         if (isClicked) {
           for (const auto& pos : temp) {
             if (pos.col == hoveredCol && pos.row == hoveredRow) {
-              if (grid[hoveredCol][hoveredRow] != nullptr) {
-                board.capture(piece, Position{hoveredCol, hoveredRow});
-              } else {
-                board.move(piece, Position{hoveredCol, hoveredRow});
-              }
+              board.move(piece, Position{hoveredCol, hoveredRow});
 
               turn = !turn;
               holding = false;
-              if(board.checkmate(turn)){
-                if(turn){
+              if (board.checkmate(turn)) {
+                if (turn) {
                   std::cout << "Checkmate. White Won" << std::endl;
-                }
-                else{
+                } else {
                   std::cout << "Checkmate. Black Won" << std::endl;
                 }
                 board.cleanup();

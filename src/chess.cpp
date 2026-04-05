@@ -18,129 +18,110 @@ int Piece::getColor() const { return this->color; }  // 0 is white, 1 is black
 Position Piece::getPosition() const { return this->position; }
 PieceType Piece::getType() const { return this->type; }
 
-std::vector<std::vector<Position>> Piece::possibleMoves() const {
-  int max_x = 7;
-  int max_y = 7;
+std::vector<std::vector<Position>> Pawn::possibleMoves() const {
   std::vector<std::vector<Position>> output;
-  switch (type) {
-    case PieceType::PAWN: {
-      if (color == 0) {  // white moves up
-        if (position.row == 1) {
-          output.push_back(std::vector<Position>{{position.col, position.row + 2}});
-        }
-        if (position.row + 1 <= max_y)
-          output.push_back(std::vector<Position>{{position.col, position.row + 1}});
-        if (position.row + 1 <= max_y && (position.col + 1 <= max_x))
-          output.push_back(
-              std::vector<Position>{{position.col + 1, position.row + 1}});
-        if (position.row + 1 <= max_y && (position.col - 1 >= 0))
-          output.push_back(
-              std::vector<Position>{{position.col - 1, position.row + 1}});
-      }
+  Position pos = getPosition();
+  int dir = (getColor() == 0) ? 1 : -1;
 
-      else {  // black moves down
-        if (position.row == 6) {
-          output.push_back(std::vector<Position>{{position.col, position.row - 2}});
-        }
+  // forward
+  if (pos.row + dir >= 0 && pos.row + dir < 8)
+    output.push_back({{pos.col, pos.row + dir}});
 
-        if (position.row - 1 >= 0)
-          output.push_back(std::vector<Position>{{position.col, position.row - 1}});
-        // move right
-        if ((position.row - 1 >= 0) && (position.col + 1 <= max_x))
-          output.push_back(
-              std::vector<Position>{{position.col + 1, position.row - 1}});
-        // move left
-        if (position.row - 1 >= 0 && (position.col - 1 >= 0))
-          output.push_back(
-              std::vector<Position>{{position.col - 1, position.row - 1}});
-      }
-      break;
+  // double move
+  if ((getColor() == 0 && pos.row == 1) || (getColor() == 1 && pos.row == 6))
+    output.push_back({{pos.col, pos.row + 2 * dir}});
+
+  // diagonals
+  if (pos.col > 0) output.push_back({{pos.col - 1, pos.row + dir}});
+  if (pos.col < 7) output.push_back({{pos.col + 1, pos.row + dir}});
+
+  return output;
+}
+
+std::vector<std::vector<Position>> Rook::possibleMoves() const {
+  std::vector<std::vector<Position>> output;
+  Position pos = getPosition();
+  std::vector<std::pair<int, int>> directions = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+
+  for (auto [dx, dy] : directions) {
+    std::vector<Position> path;
+    int x = pos.col + dx;
+    int y = pos.row + dy;
+    while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+      path.push_back({x, y});
+      x += dx;
+      y += dy;
     }
+    output.push_back(path);
+  }
+  return output;
+}
 
-    case PieceType::BISHOP: {
-      // Bishop moves in 4 diagonal directions
-      std::vector<std::pair<int, int>> directions = {
-          {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+std::vector<std::vector<Position>> Bishop::possibleMoves() const {
+  std::vector<std::vector<Position>> output;
+  Position pos = getPosition();
+  std::vector<std::pair<int, int>> directions = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 
-      for (auto [dx, dy] : directions) {
-        std::vector<Position> path;
-        int x = position.col + dx;
-        int y = position.row + dy;
-
-        while (x >= 0 && y >= 0 && x < 8 && y < 8) {  // within the board
-          path.push_back({x, y});
-          x += dx;
-          y += dy;
-        }
-        output.push_back(path);
-      }
-      break;
+  for (auto [dx, dy] : directions) {
+    std::vector<Position> path;
+    int x = pos.col + dx;
+    int y = pos.row + dy;
+    while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+      path.push_back({x, y});
+      x += dx;
+      y += dy;
     }
+    output.push_back(path);
+  }
+  return output;
+}
 
-    case PieceType::ROOK: {
-      std::vector<std::pair<int, int>> directions = {
-          {1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+std::vector<std::vector<Position>> Queen::possibleMoves() const {
+  std::vector<std::vector<Position>> output;
+  Position pos = getPosition();
+  std::vector<std::pair<int, int>> directions = {
+      {1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 
-      for (auto [dx, dy] : directions) {
-        std::vector<Position> path;
-        int x = position.col + dx;
-        int y = position.row + dy;
-
-        while (x >= 0 && y >= 0 && x < 8 && y < 8) {  // within the board
-          path.push_back({x, y});
-          x += dx;
-          y += dy;
-        }
-        output.push_back(path);
-      }
-      break;
+  for (auto [dx, dy] : directions) {
+    std::vector<Position> path;
+    int x = pos.col + dx;
+    int y = pos.row + dy;
+    while (x >= 0 && x < 8 && y >= 0 && y < 8) {
+      path.push_back({x, y});
+      x += dx;
+      y += dy;
     }
+    output.push_back(path);
+  }
+  return output;
+}
 
-    case PieceType::KNIGHT: {
-      std::vector<std::pair<int, int>> directions = {
-          {-1, -2}, {-2, -1}, {2, 1}, {1, 2}, {-1, 2}, {-2, 1}, {2, -1}, {1, -2}};
-      for (auto [dx, dy] : directions) {
-        int newX = position.col + dx;
-        int newY = position.row + dy;
-        if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
-          output.push_back({{newX, newY}});
-        }
-      }
-      break;
-    }
+std::vector<std::vector<Position>> Knight::possibleMoves() const {
+  std::vector<std::vector<Position>> output;
+  Position pos = getPosition();
+  std::vector<std::pair<int, int>> jumps = {
+      {-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};
 
-    case PieceType::QUEEN: {
-      std::vector<std::pair<int, int>> directions = {
-          {1, 1}, {1, -1}, {-1, 1}, {-1, -1}, {1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+  for (auto [dx, dy] : jumps) {
+    int x = pos.col + dx;
+    int y = pos.row + dy;
+    if (x >= 0 && x < 8 && y >= 0 && y < 8)
+      output.push_back({{x, y}});
+  }
+  return output;
+}
 
-      for (auto [dx, dy] : directions) {
-        std::vector<Position> path;
-        int x = position.col + dx;
-        int y = position.row + dy;
+std::vector<std::vector<Position>> King::possibleMoves() const {
+  std::vector<std::vector<Position>> output;
+  Position pos = getPosition();
+  std::vector<std::pair<int, int>> steps = {
+      {-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
-        while (x >= 0 && y >= 0 && x < 8 && y < 8) {  // within the board
-          path.push_back({x, y});
-          x += dx;
-          y += dy;
-        }
-        output.push_back(path);
-      }
-      break;
-    }
-
-    case PieceType::KING: {
-      std::vector<std::pair<int, int>> directions = {
-          {-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
-
-      for (auto [dx, dy] : directions) {
-        int newX = position.col + dx;
-        int newY = position.row + dy;
-        if (newX >= 0 && newX < 8 && newY >= 0 && newY < 8) {
-          output.push_back({{newX, newY}});
-        }
-      }
-      break;
-    }
+  for (auto [dx, dy] : steps) {
+    int x = pos.col + dx;
+    int y = pos.row + dy;
+    if (x >= 0 && x < 8 && y >= 0 && y < 8)
+      output.push_back({{x, y}});
   }
   return output;
 }
@@ -192,31 +173,31 @@ bool Board::checkmate(bool turn) {
 bool Board::setBoard() {
   // pawns
   for (size_t i = 0; i < 8; i++) {
-    board[i][1] = new Piece(PieceType::PAWN, 0, i, 1);  // white
-    board[i][6] = new Piece(PieceType::PAWN, 1, i, 6);  // black
+    board[i][1] = new Pawn(0, i, 1);  // white
+    board[i][6] = new Pawn(1, i, 6);  // black
 
     // put the piece in the white and black to calculate easily later
     white[i] = board[i][1];
     black[i] = board[i][6];
   }
   // white
-  board[0][0] = new Piece(PieceType::ROOK, 0, 0, 0);
-  board[1][0] = new Piece(PieceType::KNIGHT, 0, 1, 0);
-  board[2][0] = new Piece(PieceType::BISHOP, 0, 2, 0);
-  board[3][0] = new Piece(PieceType::QUEEN, 0, 3, 0);
-  board[4][0] = new Piece(PieceType::KING, 0, 4, 0);
-  board[5][0] = new Piece(PieceType::BISHOP, 0, 5, 0);
-  board[6][0] = new Piece(PieceType::KNIGHT, 0, 6, 0);
-  board[7][0] = new Piece(PieceType::ROOK, 0, 7, 0);
+  board[0][0] = new Rook(0, 0, 0);
+  board[1][0] = new Knight(0, 1, 0);
+  board[2][0] = new Bishop(0, 2, 0);
+  board[3][0] = new Queen(0, 3, 0);
+  board[4][0] = new King(0, 4, 0);
+  board[5][0] = new Bishop(0, 5, 0);
+  board[6][0] = new Knight(0, 6, 0);
+  board[7][0] = new Rook(0, 7, 0);
   // black
-  board[0][7] = new Piece(PieceType::ROOK, 1, 0, 7);
-  board[1][7] = new Piece(PieceType::KNIGHT, 1, 1, 7);
-  board[2][7] = new Piece(PieceType::BISHOP, 1, 2, 7);
-  board[3][7] = new Piece(PieceType::QUEEN, 1, 3, 7);
-  board[4][7] = new Piece(PieceType::KING, 1, 4, 7);
-  board[5][7] = new Piece(PieceType::BISHOP, 1, 5, 7);
-  board[6][7] = new Piece(PieceType::KNIGHT, 1, 6, 7);
-  board[7][7] = new Piece(PieceType::ROOK, 1, 7, 7);
+  board[0][7] = new Rook(1, 0, 7);
+  board[1][7] = new Knight(1, 1, 7);
+  board[2][7] = new Bishop(1, 2, 7);
+  board[3][7] = new Queen(1, 3, 7);
+  board[4][7] = new King(1, 4, 7);
+  board[5][7] = new Bishop(1, 5, 7);
+  board[6][7] = new Knight(1, 6, 7);
+  board[7][7] = new Rook(1, 7, 7);
 
   white[8] = board[0][0];
   white[9] = board[1][0];
@@ -242,13 +223,15 @@ Piece* (*Board::getBoard())[8] { return board; }
 Piece* (&Board::getBlack())[16] { return black; }
 Piece* (&Board::getWhite())[16] { return white; }
 
-void Board::setWhite(int i) {
-  delete white[i];
-  white[i] = nullptr;
+void Board::setWhite(int i, Piece* piece) {
+  if(white[i])
+    delete white[i];
+  white[i] = piece;
 }
-void Board::setBlack(int i) {
-  delete black[i];
-  black[i] = nullptr;
+void Board::setBlack(int i, Piece* piece) {
+  if (black[i])
+    delete black[i];
+  black[i] = piece;
 }
 
 // shows all possible paths of the piece.
@@ -276,8 +259,8 @@ std::vector<Position> Board::possible(Piece* piece) {
             int midY = original.row + (dy / 2);
             if (board[x][midY] != nullptr) break;
           }
-        } 
-        
+        }
+
         else {
           // diagonal move → must capture enemy
           if (target == nullptr || target->getColor() == color) {
@@ -320,13 +303,13 @@ void Board::capture(Piece* piece, Position new_position) {
   if (piece->getColor()) {
     for (int i = 0; i < 16; i++) {
       if (this->getWhite()[i] == before) {
-        this->setWhite(i);
+        this->setWhite(i, nullptr);
       }
     }
   } else {
     for (int i = 0; i < 16; i++) {
       if (this->getBlack()[i] == before) {
-        this->setBlack(i);
+        this->setBlack(i, nullptr);
       }
     }
   }
@@ -347,6 +330,25 @@ void Board::move(Piece* piece, Position new_position) {  // need to see if king 
     board[new_position.col][new_position.row] = board[position.col][position.row];
     piece->move(new_position);
     board[position.col][position.row] = nullptr;
+  }
+
+  if (piece->getType() == PieceType::PAWN && (piece->getPosition().row == 0 || piece->getPosition().row == 7)) {
+    std::cout << "done" << std::endl;
+    Piece* newPiece = new Queen(piece->getColor(), new_position.col, new_position.row);
+    board[new_position.col][new_position.row] = newPiece;
+    if (piece->getColor()) {
+      for (int i = 0; i < 16; i++) {
+        if (this->getWhite()[i] == piece) {
+          this->setWhite(i, newPiece);
+        }
+      }
+    } else {
+      for (int i = 0; i < 16; i++) {
+        if (this->getBlack()[i] == piece) {
+          this->setBlack(i, newPiece);
+        }
+      }
+    }
   }
 }
 
@@ -464,7 +466,12 @@ bool Board::check(int color) {
 
 void Board::cleanup() {
   for (int i = 0; i < 16; i++) {
-    setWhite(i);
-    setBlack(i);
+    setWhite(i, nullptr);
+    setBlack(i, nullptr);
+  }
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      board[i][j] = nullptr;
+    }
   }
 }
